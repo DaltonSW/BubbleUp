@@ -21,6 +21,8 @@ const (
 	InfoColor    = lipgloss.Color("#00FF00")
 	WarningColor = lipgloss.Color("#FFFF00")
 	ErrorColor   = lipgloss.Color("#FF0000")
+
+	NotifWidth = 40
 )
 
 var (
@@ -49,7 +51,7 @@ func newNotif(msg string, lvl NotifLevel, dur time.Duration) *notif {
 	notifColor := Colors[lvl]
 	notifSymbol := Symbols[lvl]
 
-	notifStyle := lipgloss.NewStyle().Foreground(notifColor).Padding(1).
+	notifStyle := lipgloss.NewStyle().Foreground(notifColor).Width(NotifWidth).
 		Border(lipgloss.RoundedBorder()).BorderForeground(notifColor)
 
 	return &notif{
@@ -58,6 +60,7 @@ func newNotif(msg string, lvl NotifLevel, dur time.Duration) *notif {
 		deathTime: time.Now().Add(dur),
 		symbol:    notifSymbol,
 		style:     notifStyle,
+		width:     NotifWidth,
 	}
 
 }
@@ -68,10 +71,11 @@ type notif struct {
 	deathTime time.Time
 	symbol    string
 	style     lipgloss.Style
+	width     int
 }
 
-func (n *notif) render(width int) string {
-	return n.style.MaxWidth(width).Render(fmt.Sprintf("%v %v", n.symbol, n.message))
+func (n *notif) render() string {
+	return n.style.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
 }
 
 type Model struct {
@@ -119,7 +123,7 @@ func (m Model) Render(content string) string {
 		return content
 	}
 
-	notifString := m.activeNotif.render(m.width)
+	notifString := m.activeNotif.render()
 
 	// log.Println(notifString)
 
@@ -129,24 +133,25 @@ func (m Model) Render(content string) string {
 	// log.Println(notifSplit)
 	// log.Println(contentSplit)
 
-	outSplit := []string{}
+	outSplit := notifSplit
 
 	for i := range len(notifSplit) {
 		notifLine := notifSplit[i]
 		contentLine := contentSplit[i]
-		outLine := ""
+
+		outLine := notifLine + contentLine[NotifWidth:]
+		// outLine := notifLine + contentLine
+		outSplit = append(outSplit, outLine)
 
 		// log.Println(notifLen)
 
-		for _, ch := range notifLine {
-			outLine += string(ch)
-		}
-
-		outLine = outLine + contentLine[len(notifLine):]
-
-		outSplit = append(outSplit, outLine)
+		// for j, ch := range notifLine {
+		// 	contentLine[j] = ch
+		// }
+		// outSplit = append(outSplit, contentLine)
 	}
 
+	// After the notification has been rendered, just show the rest of the content like normal
 	outSplit = append(outSplit, contentSplit[len(notifSplit):]...)
 
 	return strings.Join(outSplit, "\n")
