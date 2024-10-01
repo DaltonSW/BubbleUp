@@ -21,7 +21,7 @@ func main() {
 
 	content := outStyle.Render("This is a test string, wow look at it go!")
 
-	m := mainModel{
+	m := testModel{
 		content: content,
 		notif:   *New(),
 	}
@@ -35,25 +35,26 @@ func main() {
 
 }
 
-type mainModel struct {
+type testModel struct {
 	notif   Model
 	content string
 }
 
-func (m mainModel) Init() tea.Cmd {
+func (m testModel) Init() tea.Cmd {
 	return m.notif.Init()
 }
 
-func (m mainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m testModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var outNotif tea.Model
 	var outCmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "i":
-			outMsg := NotifMsg{msg: "Info notification!", level: InfoLevel, dur: time.Second * 2}
-			outNotif, outCmd = m.notif.Update(outMsg)
-			m.notif = outNotif.(Model)
+			m.notif.Notify("Info", InfoLevel, time.Second*2)
+			// outMsg := NotifMsg{msg: "Info notification!", level: InfoLevel, dur: time.Second * 2}
+			// outNotif, outCmd = m.notif.Update(outMsg)
+			// m.notif = outNotif.(Model)
 		case "w":
 			outMsg := NotifMsg{msg: "Warning notification!", level: WarningLevel, dur: time.Second * 2}
 			outNotif, outCmd = m.notif.Update(outMsg)
@@ -74,7 +75,6 @@ func (m mainModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, outCmd
 }
 
-func (m mainModel) View() string {
-	// return m.content
+func (m testModel) View() string {
 	return m.notif.Render(m.content)
 }
