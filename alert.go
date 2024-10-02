@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
 const (
+	// NOTE: These might get deprecated, just embed the style in the alert
 	InfoLevel = iota
 	WarningLevel
 	ErrorLevel
@@ -37,6 +39,12 @@ var (
 	}
 )
 
+func InfoAlertCmd(message string) tea.Cmd {
+	return func() tea.Msg {
+		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
+	}
+}
+
 type AlertLevel int
 
 type AlertMsg struct {
@@ -59,6 +67,10 @@ type AlertMsg struct {
 // }
 
 func newNotif(msg string, lvl AlertLevel, dur time.Duration) *alert {
+	if msg == "" {
+		return nil
+	}
+
 	notifColor := Colors[lvl]
 	notifSymbol := Symbols[lvl]
 
