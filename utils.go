@@ -1,6 +1,4 @@
-package main
-
-//package bubbleup
+package bubbleup
 
 import (
 	"bytes"
