@@ -8,55 +8,55 @@ import (
 	"github.com/muesli/reflow/ansi"
 )
 
-type Model struct {
-	activeNotif *notif
+type Alert struct {
+	activeAlert *alert
 	active      bool
 
 	width int
 }
 
-func New() *Model {
-	return &Model{
+func New() *Alert {
+	return &Alert{
 		active:      false,
-		activeNotif: nil,
+		activeAlert: nil,
 	}
 }
 
-func (m Model) Init() tea.Cmd {
+func (m Alert) Init() tea.Cmd {
 	return tickCmd()
 }
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Alert) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tickMsg:
-		if m.active && m.activeNotif.deathTime.Before(time.Time(msg)) {
+		if m.active && m.activeAlert.deathTime.Before(time.Time(msg)) {
 			m.active = false
-			m.activeNotif = nil
+			m.activeAlert = nil
 		}
 
 		return m, tickCmd()
-	case NotifMsg:
+	case AlertMsg:
 		// log.Println("Notif Msg received ", msg)
-		m.activeNotif = newNotif(msg.msg, msg.level, msg.dur)
+		m.activeAlert = newNotif(msg.msg, msg.level, msg.dur)
 		m.active = true
 	}
 
 	return m, nil
 }
 
-func (m Model) View() string {
+func (m Alert) View() string {
 	return ""
 }
 
 // Used the following code as a reference:
 //
 //	https://github.com/charmbracelet/lipgloss/pull/102/commits/a075bfc9317152e674d661a2cdfe58144306e77a
-func (m Model) Render(content string) string {
+func (m Alert) Render(content string) string {
 	if !m.active {
 		return content
 	}
 
-	notifString := m.activeNotif.render()
+	notifString := m.activeAlert.render()
 
 	notifSplit, _ := getLines(notifString)
 	contentSplit, _ := getLines(content)
@@ -90,9 +90,9 @@ func (m Model) Render(content string) string {
 	return builder.String()
 }
 
-func (m Model) Notify(msg string, level NotifLevel, dur time.Duration) {
+func (m Alert) Notify(msg string, level AlertLevel, dur time.Duration) {
 
-	m.activeNotif = newNotif(msg, level, dur)
+	m.activeAlert = newNotif(msg, level, dur)
 	m.active = true
 
 }

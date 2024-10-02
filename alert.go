@@ -24,27 +24,25 @@ const (
 )
 
 var (
-	Symbols = map[NotifLevel]string{
+	Symbols = map[AlertLevel]string{
 		InfoLevel:    InfoSymbol,
 		WarningLevel: WarningSymbol,
 		ErrorLevel:   ErrorSymbol,
 	}
 
-	Colors = map[NotifLevel]lipgloss.Color{
+	Colors = map[AlertLevel]lipgloss.Color{
 		InfoLevel:    InfoColor,
 		WarningLevel: WarningColor,
 		ErrorLevel:   ErrorColor,
 	}
 )
 
-//package bubbleup
+type AlertLevel int
 
-type NotifLevel int
-
-type NotifMsg struct {
+type AlertMsg struct {
 	msg   string
 	dur   time.Duration
-	level NotifLevel
+	level AlertLevel
 
 	// TODO:
 	// animation: how the notification should appear and disappear
@@ -60,14 +58,14 @@ type NotifMsg struct {
 // 	color  lipgloss.Color
 // }
 
-func newNotif(msg string, lvl NotifLevel, dur time.Duration) *notif {
+func newNotif(msg string, lvl AlertLevel, dur time.Duration) *alert {
 	notifColor := Colors[lvl]
 	notifSymbol := Symbols[lvl]
 
 	notifStyle := lipgloss.NewStyle().Foreground(notifColor).Width(NotifWidth).
 		Border(lipgloss.RoundedBorder()).BorderForeground(notifColor)
 
-	return &notif{
+	return &alert{
 		message:   msg,
 		level:     lvl,
 		deathTime: time.Now().Add(dur),
@@ -78,15 +76,15 @@ func newNotif(msg string, lvl NotifLevel, dur time.Duration) *notif {
 
 }
 
-type notif struct {
+type alert struct {
 	message   string
-	level     NotifLevel
+	level     AlertLevel
 	deathTime time.Time
 	symbol    string
 	style     lipgloss.Style
 	width     int
 }
 
-func (n *notif) render() string {
+func (n *alert) render() string {
 	return n.style.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
 }
