@@ -8,46 +8,62 @@ import (
 	"github.com/muesli/reflow/ansi"
 )
 
+// AlertModel maintains a list of alert types, and facilitates the display and
+// clearing of alerts, as well as registering custom alerts and overrides to defaults
 type AlertModel struct {
-	alertTypes map[string]AlertDefinition
-
+	useNerdFont bool
+	alertTypes  map[string]AlertDefinition
 	activeAlert *alert
 	width       int
 }
 
 // TODO: Set defaults for position and duration
-func New() *AlertModel {
-	return &AlertModel{
+
+// NewAlertModel creates and returns a new AlertModel, initialized with default alert types
+func NewAlertModel() *AlertModel {
+	model := &AlertModel{
 		activeAlert: nil,
+		width:       80,
+		useNerdFont: true,
 	}
+
+	model.registerDefaultAlertTypes()
+
+	return model
 }
 
+// Init starts the ticking command that causes alert refreshing
+// Implemented as part of BubbleTea Model interface
 func (m AlertModel) Init() tea.Cmd {
 	return tickCmd()
 }
 
+// Update takes in a message and returns an associated command to drive model functionality
+// Implemented as part of BubbleTea Model interface
 func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tickMsg:
+	case tickMsg: // Check to see if it's time to clear the alert
 		if m.activeAlert != nil && m.activeAlert.deathTime.Before(time.Time(msg)) {
 			m.activeAlert = nil
 		}
-
 		return m, tickCmd()
 	case AlertMsg:
-		m.activeAlert = newNotif(msg.msg, msg.level, msg.dur)
+		m.activeAlert = m.newNotif(msg.alertKey, msg.msg, msg.dur)
 	}
 
 	return m, nil
 }
 
+// View doesn't do anything, and it should never be called directly
+// Implemented as part of BubbleTea Model interface
 func (m AlertModel) View() string {
 	return ""
 }
 
-// Used the following code as a reference:
-//
-//	https://github.com/charmbracelet/lipgloss/pull/102/commits/a075bfc9317152e674d661a2cdfe58144306e77a
+// RenderAlert takes in the main view content and overlays the model's active alert.
+// This function expects you build the entirety of your view's content before calling
+// this function. It's recommended for this to be the final call of your model's View().
+// Returns a string representation of the content with overlayed alert.
 func (m AlertModel) Render(content string) string {
 	if m.activeAlert == nil {
 		return content
@@ -61,9 +77,10 @@ func (m AlertModel) Render(content string) string {
 	notifHeight := len(notifSplit)
 	contentHeight := len(contentSplit)
 
-	// posX, posY := 0, 0
-
 	var builder strings.Builder
+
+	// NOTE: The current implementation here assumes the notification is
+	// in the top left. It will need to be adapted to handle other positions
 
 	for i := range contentHeight {
 		if i > 0 {
@@ -89,8 +106,10 @@ func (m AlertModel) Render(content string) string {
 
 // Timer stuff
 
+// tickMsg is the message that tells the model to assess active alert lifespan.
 type tickMsg time.Time
 
+// tickCmd returns a tea Command to initiate a tick.
 func tickCmd() tea.Cmd {
 	return tea.Tick(time.Millisecond*500, func(t time.Time) tea.Msg {
 		return tickMsg(t)

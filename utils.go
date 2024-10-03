@@ -22,10 +22,7 @@ func getLines(s string) (lines []string, widest int) {
 	return lines, widest
 }
 
-// Used the following code as a reference:
-//
-//	https://github.com/charmbracelet/lipgloss/pull/102/commits/a075bfc9317152e674d661a2cdfe58144306e77a
-//
+// Obtained from https://github.com/charmbracelet/lipgloss/pull/102/commits/a075bfc9317152e674d661a2cdfe58144306e77a
 // cutLeft cuts printable characters from the left.
 func cutLeft(s string, cutWidth int) string {
 	var (

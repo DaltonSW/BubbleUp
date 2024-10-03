@@ -9,48 +9,41 @@ import (
 )
 
 const (
-	// NOTE: These might get deprecated in favor of string keys to allow for user customization
-	InfoLevel = iota
-	WarningLevel
-	ErrorLevel
+	InfoAlertKey  = "Info"
+	WarnAlertKey  = "Warn"
+	ErrorAlertKey = "Error"
+	DebugAlertKey = "Debug"
 
-	InfoSymbol    = ""
-	WarningSymbol = "󱈸"
-	ErrorSymbol   = "󰬅"
+	infoNerdSymbol  = " "
+	warnNerdSymbol  = "󱈸 "
+	errorNerdSymbol = "󰬅 "
+	debugNerdSymbol = "󰃤 "
 
-	InfoColor    = lipgloss.Color("#00FF00")
-	WarningColor = lipgloss.Color("#FFFF00")
-	ErrorColor   = lipgloss.Color("#FF0000")
+	// InfoUniSymbol    = ""
+	// WarningUniSymbol = ""
+	// ErrorUniSymbol   = ""
+	// DebugUniSymbol   = "🐛 "
+
+	infoColor  = lipgloss.Color("#00FF00")
+	warnColor  = lipgloss.Color("#FFFF00")
+	errorColor = lipgloss.Color("#FF0000")
+	debugColor = lipgloss.Color("#FF00FF")
 
 	NotifWidth = 40
 )
 
-var (
-	Symbols = map[AlertLevel]string{
-		InfoLevel:    InfoSymbol,
-		WarningLevel: WarningSymbol,
-		ErrorLevel:   ErrorSymbol,
-	}
-
-	Colors = map[AlertLevel]lipgloss.Color{
-		InfoLevel:    InfoColor,
-		WarningLevel: WarningColor,
-		ErrorLevel:   ErrorColor,
-	}
-)
-
-func InfoAlertCmd(message string) tea.Cmd {
-	return func() tea.Msg {
-		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
-	}
-}
+// func InfoAlertCmd(message string) tea.Cmd {
+// 	return func() tea.Msg {
+// 		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
+// 	}
+// }
 
 type AlertLevel int
 
 type AlertMsg struct {
-	msg   string
-	dur   time.Duration
-	level AlertLevel
+	alertKey string
+	msg      string
+	dur      time.Duration
 
 	// TODO:
 	// animation: how the notification should appear and disappear
@@ -66,23 +59,22 @@ type AlertMsg struct {
 // 	color  lipgloss.Color
 // }
 
-func newNotif(msg string, lvl AlertLevel, dur time.Duration) *alert {
-	if msg == "" {
+func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
+	if msg == "" || key == "" {
 		return nil
 	}
 
-	notifColor := Colors[lvl]
-	notifSymbol := Symbols[lvl]
+	alertDef, ok := m.alertTypes[key]
 
-	notifStyle := lipgloss.NewStyle().Foreground(notifColor).Width(NotifWidth).
-		Border(lipgloss.RoundedBorder()).BorderForeground(notifColor)
+	if !ok {
+		return nil
+	}
 
 	return &alert{
 		message:   msg,
-		level:     lvl,
 		deathTime: time.Now().Add(dur),
-		symbol:    notifSymbol,
-		style:     notifStyle,
+		symbol:    alertDef.Symbol,
+		style:     alertDef.Style,
 		width:     NotifWidth,
 	}
 
@@ -90,7 +82,6 @@ func newNotif(msg string, lvl AlertLevel, dur time.Duration) *alert {
 
 type alert struct {
 	message   string
-	level     AlertLevel
 	deathTime time.Time
 	symbol    string
 	style     lipgloss.Style
@@ -107,11 +98,14 @@ type AlertDefinition struct {
 	Key    string
 	Style  lipgloss.Style
 	Symbol string
+	// DefaultDur time.Duration
+	// DefaultPos
+	// Default
 }
 
 func (m AlertModel) NewAlertCmd(alertType, message string) tea.Cmd {
 	return func() tea.Msg {
-		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
+		return AlertMsg{alertKey: alertType, msg: message, dur: time.Second * 2}
 	}
 }
 
@@ -121,5 +115,35 @@ func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
 }
 
 func (m AlertModel) registerDefaultAlertTypes() {
+	infoDef := AlertDefinition{
+		Key:    "Info",
+		Symbol: infoNerdSymbol,
+		Style:  lipgloss.NewStyle().Foreground(infoColor).Border(lipgloss.RoundedBorder()).BorderForeground(infoColor),
+	}
 
+	m.RegisterNewAlertType(infoDef)
+
+	warnDef := AlertDefinition{
+		Key:    "Warn",
+		Symbol: warnNerdSymbol,
+		Style:  lipgloss.NewStyle().Foreground(warnColor).Border(lipgloss.RoundedBorder()).BorderForeground(warnColor),
+	}
+
+	m.RegisterNewAlertType(warnDef)
+
+	errorDef := AlertDefinition{
+		Key:    "Error",
+		Symbol: errorNerdSymbol,
+		Style:  lipgloss.NewStyle().Foreground(errorColor).Border(lipgloss.RoundedBorder()).BorderForeground(errorColor),
+	}
+
+	m.RegisterNewAlertType(errorDef)
+
+	debugDef := AlertDefinition{
+		Key:    "Debug",
+		Symbol: debugNerdSymbol,
+		Style:  lipgloss.NewStyle().Foreground(debugColor).Border(lipgloss.RoundedBorder()).BorderForeground(debugColor),
+	}
+
+	m.RegisterNewAlertType(debugDef)
 }
