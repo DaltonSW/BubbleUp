@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	// NOTE: These might get deprecated, just embed the style in the alert
+	// NOTE: These might get deprecated in favor of string keys to allow for user customization
 	InfoLevel = iota
 	WarningLevel
 	ErrorLevel
@@ -99,4 +99,27 @@ type alert struct {
 
 func (n *alert) render() string {
 	return n.style.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
+}
+
+// Region: Model stuff
+
+type AlertDefinition struct {
+	Key    string
+	Style  lipgloss.Style
+	Symbol string
+}
+
+func (m AlertModel) NewAlertCmd(alertType, message string) tea.Cmd {
+	return func() tea.Msg {
+		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
+	}
+}
+
+func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
+	m.alertTypes[definition.Key] = definition
+
+}
+
+func (m AlertModel) registerDefaultAlertTypes() {
+
 }

@@ -9,9 +9,10 @@ import (
 )
 
 type AlertModel struct {
-	activeAlert *alert
+	alertTypes map[string]AlertDefinition
 
-	width int
+	activeAlert *alert
+	width       int
 }
 
 // TODO: Set defaults for position and duration
