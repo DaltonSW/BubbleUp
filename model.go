@@ -25,6 +25,7 @@ func NewAlertModel() *AlertModel {
 		activeAlert: nil,
 		width:       80,
 		useNerdFont: true,
+		alertTypes:  make(map[string]AlertDefinition),
 	}
 
 	model.registerDefaultAlertTypes()
@@ -43,9 +44,17 @@ func (m AlertModel) Init() tea.Cmd {
 func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tickMsg: // Check to see if it's time to clear the alert
-		if m.activeAlert != nil && m.activeAlert.deathTime.Before(time.Time(msg)) {
-			m.activeAlert = nil
+		if m.activeAlert != nil {
+			if m.activeAlert.deathTime.Before(time.Time(msg)) {
+				m.activeAlert = nil
+			} else {
+				m.activeAlert.curLerpStep += 0.1
+				if m.activeAlert.curLerpStep > 1 {
+					m.activeAlert.curLerpStep = 1
+				}
+			}
 		}
+
 		return m, tickCmd()
 	case AlertMsg:
 		m.activeAlert = m.newNotif(msg.alertKey, msg.msg, msg.dur)
@@ -111,7 +120,7 @@ type tickMsg time.Time
 
 // tickCmd returns a tea Command to initiate a tick.
 func tickCmd() tea.Cmd {
-	return tea.Tick(time.Millisecond*500, func(t time.Time) tea.Msg {
+	return tea.Tick(time.Millisecond*100, func(t time.Time) tea.Msg {
 		return tickMsg(t)
 	})
 }

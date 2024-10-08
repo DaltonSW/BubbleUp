@@ -19,15 +19,17 @@ const (
 	errorNerdSymbol = "󰬅 "
 	debugNerdSymbol = "󰃤 "
 
-	// InfoUniSymbol    = ""
-	// WarningUniSymbol = ""
-	// ErrorUniSymbol   = ""
-	// DebugUniSymbol   = "🐛 "
+	InfoUniSymbol    = "(i)"
+	WarningUniSymbol = "(!)"
+	ErrorUniSymbol   = "[!]"
+	DebugUniSymbol   = "(?)"
 
 	infoColor  = lipgloss.Color("#00FF00")
 	warnColor  = lipgloss.Color("#FFFF00")
 	errorColor = lipgloss.Color("#FF0000")
 	debugColor = lipgloss.Color("#FF00FF")
+
+	backColor = lipgloss.Color("#000000")
 
 	NotifWidth = 40
 )
@@ -71,11 +73,13 @@ func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
 	}
 
 	return &alert{
-		message:   msg,
-		deathTime: time.Now().Add(dur),
-		symbol:    alertDef.Symbol,
-		style:     alertDef.Style,
-		width:     NotifWidth,
+		message:     msg,
+		deathTime:   time.Now().Add(dur),
+		symbol:      alertDef.Symbol,
+		foreColor:   alertDef.Style.GetForeground(),
+		style:       alertDef.Style,
+		width:       NotifWidth,
+		curLerpStep: 0.1,
 	}
 
 }
@@ -84,12 +88,23 @@ type alert struct {
 	message   string
 	deathTime time.Time
 	symbol    string
+	foreColor lipgloss.TerminalColor
 	style     lipgloss.Style
 	width     int
+
+	curLerpStep float64
+
+	// animation
+	// location
 }
 
 func (n *alert) render() string {
-	return n.style.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
+	// if n.curLerpStep < 1 {
+	lerpColor := lerpColor(lipgloss.NoColor{}, n.foreColor, n.curLerpStep)
+	n.style.Foreground(lerpColor)
+	newStyle := n.style.Foreground(lerpColor).BorderForeground(lerpColor)
+	// }
+	return newStyle.Render(fmt.Sprintf("%v %v", n.symbol, lerpColor))
 }
 
 // Region: Model stuff
@@ -110,8 +125,11 @@ func (m AlertModel) NewAlertCmd(alertType, message string) tea.Cmd {
 }
 
 func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
-	m.alertTypes[definition.Key] = definition
+	if m.alertTypes == nil {
+		m.alertTypes = make(map[string]AlertDefinition)
+	}
 
+	m.alertTypes[definition.Key] = definition
 }
 
 func (m AlertModel) registerDefaultAlertTypes() {
