@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/lucasb-eyer/go-colorful"
 )
 
 const (
@@ -24,21 +25,22 @@ const (
 	ErrorUniSymbol   = "[!]"
 	DebugUniSymbol   = "(?)"
 
-	infoColor  = lipgloss.Color("#00FF00")
-	warnColor  = lipgloss.Color("#FFFF00")
-	errorColor = lipgloss.Color("#FF0000")
-	debugColor = lipgloss.Color("#FF00FF")
-
-	backColor = lipgloss.Color("#000000")
-
 	NotifWidth = 40
+
+	LerpIncrement = 0.18
 )
 
-// func InfoAlertCmd(message string) tea.Cmd {
-// 	return func() tea.Msg {
-// 		return AlertMsg{msg: message, level: InfoLevel, dur: time.Second * 2}
-// 	}
-// }
+// Constant colors used for included alert types
+var (
+	infoColor, _  = colorful.Hex("#00FF00")
+	warnColor, _  = colorful.Hex("#FFFF00")
+	errorColor, _ = colorful.Hex("#FF0000")
+	debugColor, _ = colorful.Hex("#FF00FF")
+
+	backColor, _ = colorful.Hex("#000000")
+
+	baseStyle = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Width(NotifWidth)
+)
 
 type AlertLevel int
 
@@ -76,10 +78,10 @@ func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
 		message:     msg,
 		deathTime:   time.Now().Add(dur),
 		symbol:      alertDef.Symbol,
-		foreColor:   alertDef.Style.GetForeground(),
+		foreColor:   alertDef.ForeColor,
 		style:       alertDef.Style,
 		width:       NotifWidth,
-		curLerpStep: 0.1,
+		curLerpStep: 0.3,
 	}
 
 }
@@ -88,7 +90,7 @@ type alert struct {
 	message   string
 	deathTime time.Time
 	symbol    string
-	foreColor lipgloss.TerminalColor
+	foreColor colorful.Color
 	style     lipgloss.Style
 	width     int
 
@@ -99,20 +101,19 @@ type alert struct {
 }
 
 func (n *alert) render() string {
-	// if n.curLerpStep < 1 {
-	lerpColor := lerpColor(lipgloss.NoColor{}, n.foreColor, n.curLerpStep)
-	n.style.Foreground(lerpColor)
-	newStyle := n.style.Foreground(lerpColor).BorderForeground(lerpColor)
-	// }
-	return newStyle.Render(fmt.Sprintf("%v %v", n.symbol, lerpColor))
+	newColor := backColor.BlendLab(n.foreColor, n.curLerpStep)
+	lipColor := lipgloss.Color(newColor.Hex())
+	newStyle := baseStyle.Foreground(lipColor).BorderForeground(lipColor)
+	return newStyle.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
 }
 
 // Region: Model stuff
 
 type AlertDefinition struct {
-	Key    string
-	Style  lipgloss.Style
-	Symbol string
+	Key       string
+	ForeColor colorful.Color
+	Style     lipgloss.Style
+	Symbol    string
 	// DefaultDur time.Duration
 	// DefaultPos
 	// Default
@@ -134,33 +135,33 @@ func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
 
 func (m AlertModel) registerDefaultAlertTypes() {
 	infoDef := AlertDefinition{
-		Key:    "Info",
-		Symbol: infoNerdSymbol,
-		Style:  lipgloss.NewStyle().Foreground(infoColor).Border(lipgloss.RoundedBorder()).BorderForeground(infoColor),
+		Key:       "Info",
+		Symbol:    infoNerdSymbol,
+		ForeColor: infoColor,
 	}
 
 	m.RegisterNewAlertType(infoDef)
 
 	warnDef := AlertDefinition{
-		Key:    "Warn",
-		Symbol: warnNerdSymbol,
-		Style:  lipgloss.NewStyle().Foreground(warnColor).Border(lipgloss.RoundedBorder()).BorderForeground(warnColor),
+		Key:       "Warn",
+		Symbol:    warnNerdSymbol,
+		ForeColor: warnColor,
 	}
 
 	m.RegisterNewAlertType(warnDef)
 
 	errorDef := AlertDefinition{
-		Key:    "Error",
-		Symbol: errorNerdSymbol,
-		Style:  lipgloss.NewStyle().Foreground(errorColor).Border(lipgloss.RoundedBorder()).BorderForeground(errorColor),
+		Key:       "Error",
+		Symbol:    errorNerdSymbol,
+		ForeColor: errorColor,
 	}
 
 	m.RegisterNewAlertType(errorDef)
 
 	debugDef := AlertDefinition{
-		Key:    "Debug",
-		Symbol: debugNerdSymbol,
-		Style:  lipgloss.NewStyle().Foreground(debugColor).Border(lipgloss.RoundedBorder()).BorderForeground(debugColor),
+		Key:       "Debug",
+		Symbol:    debugNerdSymbol,
+		ForeColor: debugColor,
 	}
 
 	m.RegisterNewAlertType(debugDef)

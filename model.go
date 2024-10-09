@@ -48,7 +48,7 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.activeAlert.deathTime.Before(time.Time(msg)) {
 				m.activeAlert = nil
 			} else {
-				m.activeAlert.curLerpStep += 0.1
+				m.activeAlert.curLerpStep += LerpIncrement
 				if m.activeAlert.curLerpStep > 1 {
 					m.activeAlert.curLerpStep = 1
 				}
