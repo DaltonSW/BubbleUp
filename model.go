@@ -20,11 +20,11 @@ type AlertModel struct {
 // TODO: Set defaults for position and duration
 
 // NewAlertModel creates and returns a new AlertModel, initialized with default alert types
-func NewAlertModel() *AlertModel {
+func NewAlertModel(width int, useNerdFont bool) *AlertModel {
 	model := &AlertModel{
 		activeAlert: nil,
-		width:       80,
-		useNerdFont: true,
+		width:       width,
+		useNerdFont: useNerdFont,
 		alertTypes:  make(map[string]AlertDefinition),
 	}
 
@@ -48,7 +48,7 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.activeAlert.deathTime.Before(time.Time(msg)) {
 				m.activeAlert = nil
 			} else {
-				m.activeAlert.curLerpStep += LerpIncrement
+				m.activeAlert.curLerpStep += DefaultLerpIncrement
 				if m.activeAlert.curLerpStep > 1 {
 					m.activeAlert.curLerpStep = 1
 				}
@@ -56,7 +56,7 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		return m, tickCmd()
-	case AlertMsg:
+	case alertMsg:
 		m.activeAlert = m.newNotif(msg.alertKey, msg.msg, msg.dur)
 	}
 
