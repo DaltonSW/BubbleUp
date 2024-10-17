@@ -4,11 +4,15 @@ Float your alerts to the top of your TUI like a bubble in a soda. Integrates wit
 
 ![Example GIF](./examples/example.gif)
 
+![Keypress Monitoring GIF](./examples/keypresses.gif)
+
 ## Getting Started
 
 Run the following to download the module:
 
-`go get go.dalton.dog/bubbleup`
+```sh
+go get go.dalton.dog/bubbleup
+```
 
 Then import it into your project with the following:
 
@@ -21,7 +25,7 @@ import (
 
 This is assuming you already have BubbleTea installed and available in your project. Go check out their repo [here](https://github.com/charmbracelet/bubbletea) for more information!
 
-From there, it's as simple as creating a new `bubbleup.AlertModel` by calling `bubbleup.NewAlertModel(#, [true|false])`, and embedding that in your main model.
+From there, it's as simple as creating a new `bubbleup.AlertModel` by calling `bubbleup.NewAlertModel([#], [true|false])`, and embedding the returned model inside of your main model.
 
 The first parameter is the width that you want the alerts to render at.  
 *Note: If your message length exceeds the max width, it will wrap*  
@@ -41,15 +45,14 @@ If you need to also return one or more commands, be sure to use `tea.Batch()` to
 This is where you'll actually spawn the alerts in, which is as easy as calling `NewAlertCmd()` with a key and a message. The formatting and stylings are handled by what's provided in the stored `AlertDefinition` types (more info below).  
 
 Example with the included Info alert type:
-``
 
 Be sure to pass any received messages to the alert model, and appropriately use the return values.  
-Reassign your stored alert with the updated alert,	and return the given command, either alone or via tea.Batch().  
+Reassign your stored alert with the updated alert, and return the given command, either alone or via tea.Batch().  
 ```go
-alertCmd = m.alert.NewAlertCmd(bubbleup.InfoKey, "New info alert.")
+alertCmd = m.alert.NewAlertCmd(bubbleup.InfoKey, "New info alert.") // Get the command to initiate the desired alert
 
-outAlert, outCmd := m.alert.Update(msg)
-m.alert = outAlert.(bubbleup.AlertModel)
+outAlert, outCmd := m.alert.Update(msg)  // Pass any messages to the alert model, such as alert or tick messages
+m.alert = outAlert.(bubbleup.AlertModel) // Reassign the returned alert model to the main model
 
 return m, tea.Batch(alertCmd, outCmd)
 ```
@@ -66,7 +69,7 @@ You can create your own alert types by creating an instance of an `AlertDefiniti
 - Key: (Required) Unique identifier for your alert type. What is passed into `NewAlertCmd` to get rendering information.
 - ForeColor: (Required) A hex color string that you want to use as the foreground color of your alert type.
 - Style: (Optional) A `lipgloss.Style` struct that will override the default one, but it's up to you to make sure your override meshes well.
-- Symbol: (Optional) The symbol or strings used to prefix your message contents. Can be left empty
+- Prefix: (Optional) The symbol or strings used to prefix your message contents. Can be left empty
 
 
 ### Example
@@ -77,7 +80,7 @@ You would declare and register your new alert type like this:
     myCustomAlert := AlertDefinition{
         Key: "CoolAlert",
         ForeColor: "#123456",
-        Symbol: ":)"
+        Prefix: ":)"
     }
 
     m.alertModel.RegisterNewAlertType(myCustomAlert)

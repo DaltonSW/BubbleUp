@@ -29,15 +29,14 @@ const (
 	ErrorNerdSymbol = "󰬅 "
 	DebugNerdSymbol = "󰃤 "
 
-	InfoUniSymbol    = "(i)"
-	WarningUniSymbol = "(!)"
-	ErrorUniSymbol   = "[!]"
-	DebugUniSymbol   = "(?)"
+	InfoUniPrefix    = "(i)"
+	WarningUniPrefix = "(!)"
+	ErrorUniPrefix   = "[!!]"
+	DebugUniPrefix   = "(?)"
 )
 
 // Defaults used by the notification rendering.
 const (
-	DefaultNotifWidth    = 40
 	DefaultLerpIncrement = 0.18
 )
 
@@ -58,7 +57,7 @@ var (
 
 	backColor, _ = colorful.Hex("#000000")
 
-	baseStyle = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder()).Width(DefaultNotifWidth)
+	baseStyle = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder())
 )
 
 // alertMsg is the tea.Msg used to activate a notification
@@ -91,10 +90,10 @@ func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
 	return &alert{
 		message:     msg,
 		deathTime:   time.Now().Add(dur),
-		symbol:      alertDef.Symbol,
+		prefix:      alertDef.Prefix,
 		foreColor:   color,
 		style:       alertDef.Style,
-		width:       DefaultNotifWidth,
+		width:       m.width,
 		curLerpStep: 0.3,
 	}
 
@@ -105,7 +104,7 @@ func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
 type alert struct {
 	message   string
 	deathTime time.Time
-	symbol    string
+	prefix    string
 	foreColor colorful.Color
 	style     lipgloss.Style
 	width     int
@@ -122,8 +121,8 @@ type alert struct {
 func (n *alert) render() string {
 	newColor := backColor.BlendLab(n.foreColor, n.curLerpStep)
 	lipColor := lipgloss.Color(newColor.Hex())
-	newStyle := baseStyle.Foreground(lipColor).BorderForeground(lipColor)
-	return newStyle.Render(fmt.Sprintf("%v %v", n.symbol, n.message))
+	newStyle := baseStyle.Foreground(lipColor).BorderForeground(lipColor).Width(n.width)
+	return newStyle.Render(fmt.Sprintf("%v %v", n.prefix, n.message))
 }
 
 // Region: Model stuff
@@ -140,7 +139,7 @@ type AlertDefinition struct {
 	Style lipgloss.Style
 
 	// (Opt) String used to prefix the alert message
-	Symbol string
+	Prefix string
 
 	// DefaultDur time.Duration
 	// DefaultPos
@@ -175,9 +174,28 @@ func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
 
 // Registers all the alert types that ship with BubbleUp by out of the box.
 func (m AlertModel) registerDefaultAlertTypes() {
+	var (
+		infoPref  string
+		warnPref  string
+		errPref   string
+		debugPref string
+	)
+
+	if m.useNerdFont {
+		infoPref = InfoNerdSymbol
+		warnPref = WarnNerdSymbol
+		errPref = ErrorNerdSymbol
+		debugPref = DebugNerdSymbol
+	} else {
+		infoPref = InfoUniPrefix
+		warnPref = WarningUniPrefix
+		errPref = ErrorUniPrefix
+		debugPref = DebugUniPrefix
+	}
+
 	infoDef := AlertDefinition{
 		Key:       "Info",
-		Symbol:    InfoNerdSymbol,
+		Prefix:    infoPref,
 		ForeColor: InfoColor,
 	}
 
@@ -185,7 +203,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 
 	warnDef := AlertDefinition{
 		Key:       "Warn",
-		Symbol:    WarnNerdSymbol,
+		Prefix:    warnPref,
 		ForeColor: WarnColor,
 	}
 
@@ -193,7 +211,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 
 	errorDef := AlertDefinition{
 		Key:       "Error",
-		Symbol:    ErrorNerdSymbol,
+		Prefix:    errPref,
 		ForeColor: ErrorColor,
 	}
 
@@ -201,7 +219,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 
 	debugDef := AlertDefinition{
 		Key:       "Debug",
-		Symbol:    DebugNerdSymbol,
+		Prefix:    debugPref,
 		ForeColor: DebugColor,
 	}
 
