@@ -10,22 +10,25 @@ import (
 
 // AlertModel maintains a list of alert types, and facilitates the display and
 // clearing of alerts, as well as registering custom alerts and overrides to defaults
+// Note: duration is measured in seconds
 type AlertModel struct {
 	useNerdFont bool
 	alertTypes  map[string]AlertDefinition
 	activeAlert *alert
 	width       int
+	duration    time.Duration
 }
 
 // TODO: Set defaults for position and duration
 
 // NewAlertModel creates and returns a new AlertModel, initialized with default alert types
-func NewAlertModel(width int, useNerdFont bool) *AlertModel {
+func NewAlertModel(width int, useNerdFont bool, duration time.Duration) *AlertModel {
 	model := &AlertModel{
 		activeAlert: nil,
 		width:       width,
 		useNerdFont: useNerdFont,
 		alertTypes:  make(map[string]AlertDefinition),
+		duration:    duration,
 	}
 
 	model.registerDefaultAlertTypes()
