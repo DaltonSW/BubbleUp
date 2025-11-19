@@ -2,15 +2,12 @@ package main
 
 // Only two imports that are required
 import (
-	tea "github.com/charmbracelet/bubbletea"
-	"go.dalton.dog/bubbleup"
-)
-
-import (
 	"log"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"go.dalton.dog/bubbleup"
 	"golang.org/x/term"
 )
 
@@ -30,8 +27,8 @@ func main() {
 	m := testModel{
 		content: content,
 
-		// width = 80, useNerdFont = true
-		alert: *bubbleup.NewAlertModel(80, true),
+		// width = 80, useNerdFont = true, duration = 10
+		alert: *bubbleup.NewAlertModel(80, true, 10),
 	}
 
 	p := tea.NewProgram(m, tea.WithAltScreen())

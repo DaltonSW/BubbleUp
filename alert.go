@@ -151,7 +151,7 @@ type AlertDefinition struct {
 // returned tea.Cmd should be batched into your return.
 func (m AlertModel) NewAlertCmd(alertType, message string) tea.Cmd {
 	return func() tea.Msg {
-		return alertMsg{alertKey: alertType, msg: message, dur: time.Second * 2}
+		return alertMsg{alertKey: alertType, msg: message, dur: time.Second * m.duration}
 	}
 }
 
