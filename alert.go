@@ -63,19 +63,28 @@ const (
 	WarnColor  = "#FFFF00"
 	ErrorColor = "#FF0000"
 	DebugColor = "#FF00FF"
+	BackColor  = "#000000"
 )
 
 // Constant colors and stylings used for included alert types.
+// Ignoring errors because we are using hardcoded values
 var (
-	infoColor, _  = colorful.Hex("#00FF00")
-	warnColor, _  = colorful.Hex("#FFFF00")
-	errorColor, _ = colorful.Hex("#FF0000")
-	debugColor, _ = colorful.Hex("#FF00FF")
-
-	backColor, _ = colorful.Hex("#000000")
+	infoColor, _  = colorful.Hex(InfoColor)
+	warnColor, _  = colorful.Hex(WarnColor)
+	errorColor, _ = colorful.Hex(ErrorColor)
+	debugColor, _ = colorful.Hex(DebugColor)
+	backColor, _  = colorful.Hex(BackColor)
 
 	baseStyle = lipgloss.NewStyle().BorderStyle(lipgloss.RoundedBorder())
 )
+
+var parsedColors = map[string]colorful.Color{
+	InfoColor:  infoColor,
+	WarnColor:  warnColor,
+	ErrorColor: errorColor,
+	DebugColor: debugColor,
+	BackColor:  backColor,
+}
 
 // alertMsg is the tea.Msg used to activate a notification
 type alertMsg struct {
@@ -99,15 +108,18 @@ func (m AlertModel) newNotify(key, msg string, dur time.Duration) *alert {
 		return nil
 	}
 
-	// Can safely discard error because we validated the color
-	// when registering the alert defition
-	color, _ := colorful.Hex(alertDef.ForeColor)
+	foreColor, ok := parsedColors[alertDef.ForeColor]
+	if !ok {
+		// Can safely discard error because we validated the color
+		// when registering the alert defition
+		foreColor, _ = colorful.Hex(alertDef.ForeColor)
+	}
 
 	return &alert{
 		message:     msg,
 		deathTime:   time.Now().Add(dur),
 		prefix:      alertDef.Prefix,
-		foreColor:   color,
+		foreColor:   foreColor,
 		style:       alertDef.Style,
 		width:       m.width,
 		minWidth:    m.minWidth,

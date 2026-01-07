@@ -187,10 +187,9 @@ func (m testModel) View() string {
 		legend := fmt.Sprintf("Keypress: <%s>", m.PressedKey.String())
 		quit := "q - Quit"
 		legendStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF00"))
-		content = strings.Replace(content,
+		content = strings.ReplaceAll(content,
 			quit+strings.Repeat(" ", 40),
 			quit+strings.Repeat(" ", 10)+"["+legendStyle.Render(legend)+"]"+strings.Repeat(" ", 30-len(legend)-2),
-			-1,
 		)
 	}
 	return content
