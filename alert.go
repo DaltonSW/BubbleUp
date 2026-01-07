@@ -29,10 +29,27 @@ const (
 	ErrorNerdSymbol = "󰬅 "
 	DebugNerdSymbol = "󰃤 "
 
-	InfoUniPrefix    = "(i)"
-	WarningUniPrefix = "(!)"
-	ErrorUniPrefix   = "[!!]"
-	DebugUniPrefix   = "(?)"
+	InfoASCIIPrefix    = "(i)"
+	WarningASCIIPrefix = "(!)"
+	ErrorASCIIPrefix   = "[!!]"
+	DebugASCIIPrefix   = "(?)"
+
+	InfoUnicodePrefix    = "\u24D8 " // Trailing space is intentional
+	WarningUnicodePrefix = "\u26A0"
+	ErrorUnicodePrefix   = "\u2718"
+	DebugUnicodePrefix   = "\u003F"
+
+	// Deprecated: use InfoASCIIPrefix instead.
+	InfoUniPrefix = InfoASCIIPrefix
+
+	// Deprecated: use WarningASCIIPrefix instead.
+	WarningUniPrefix = WarningASCIIPrefix
+
+	// Deprecated: use ErrorASCIIPrefix instead.
+	ErrorUniPrefix = ErrorASCIIPrefix
+
+	// Deprecated: use DebugASCIIPrefix instead.
+	DebugUniPrefix = DebugASCIIPrefix
 )
 
 // Defaults used by the notification rendering.
@@ -68,11 +85,10 @@ type alertMsg struct {
 
 	// TODO:
 	// animation: how the notification should appear and disappear
-	// location: where on the screen it should appear
 	// style: Mimic nvim.notify's style options perhaps?
 }
 
-func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
+func (m AlertModel) newNotify(key, msg string, dur time.Duration) *alert {
 	if msg == "" || key == "" {
 		return nil
 	}
@@ -94,7 +110,9 @@ func (m AlertModel) newNotif(key, msg string, dur time.Duration) *alert {
 		foreColor:   color,
 		style:       alertDef.Style,
 		width:       m.width,
+		minWidth:    m.minWidth,
 		curLerpStep: 0.3,
+		position:    m.position,
 	}
 
 }
@@ -108,11 +126,10 @@ type alert struct {
 	foreColor colorful.Color
 	style     lipgloss.Style
 	width     int
+	minWidth  int
 
 	curLerpStep float64
-
-	// animation
-	// location
+	position    Position
 }
 
 // render will render the given alert based on its values
@@ -121,8 +138,44 @@ type alert struct {
 func (n *alert) render() string {
 	newColor := backColor.BlendLab(n.foreColor, n.curLerpStep)
 	lipColor := lipgloss.Color(newColor.Hex())
-	newStyle := baseStyle.Foreground(lipColor).BorderForeground(lipColor).Width(n.width)
-	return newStyle.Render(fmt.Sprintf("%v %v", n.prefix, n.message))
+
+	// Calculate actual width based on minWidth setting
+	actualWidth := n.width // default to max/fixed width
+
+	if n.minWidth > 0 {
+		// Dynamic mode: measure message width
+		messageText := fmt.Sprintf("%v %v", n.prefix, n.message)
+
+		// Get the width of the message text itself
+		messageWidth := lipgloss.Width(messageText)
+
+		// Account for extra space needed, determined imperically
+		messageWidth += 3
+
+		// Clamp between min and max
+		if messageWidth < n.minWidth {
+			actualWidth = n.minWidth
+		} else if messageWidth > n.width {
+			actualWidth = n.width
+		} else {
+			actualWidth = messageWidth
+		}
+	}
+
+	newStyle := baseStyle.
+		Foreground(lipColor).
+		BorderForeground(lipColor).
+		Width(actualWidth).
+		Padding(0, 1)
+
+	// Compute width available for text inside border+padding.
+	textWidth := actualWidth - 2
+	if textWidth < 1 {
+		textWidth = 1
+	}
+
+	content := hangingWrap(n.prefix, n.message, textWidth)
+	return newStyle.Render(content)
 }
 
 // Region: Model stuff
@@ -172,6 +225,13 @@ func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
 	m.alertTypes[definition.Key] = definition
 }
 
+var unicodePrefixes = map[string]string{
+	"Info":  InfoUnicodePrefix,
+	"Warn":  WarningUnicodePrefix,
+	"Error": ErrorUnicodePrefix,
+	"Debug": DebugUnicodePrefix,
+}
+
 // Registers all the alert types that ship with BubbleUp by out of the box.
 func (m AlertModel) registerDefaultAlertTypes() {
 	var (
@@ -187,10 +247,10 @@ func (m AlertModel) registerDefaultAlertTypes() {
 		errPref = ErrorNerdSymbol
 		debugPref = DebugNerdSymbol
 	} else {
-		infoPref = InfoUniPrefix
-		warnPref = WarningUniPrefix
-		errPref = ErrorUniPrefix
-		debugPref = DebugUniPrefix
+		infoPref = InfoASCIIPrefix
+		warnPref = WarningASCIIPrefix
+		errPref = ErrorASCIIPrefix
+		debugPref = DebugASCIIPrefix
 	}
 
 	infoDef := AlertDefinition{
