@@ -82,37 +82,50 @@ func (m AlertModel) WithAllowEscToClose() AlertModel {
 	return m
 }
 
-// Init starts the ticking command that causes alert refreshing
-// Implemented as part of BubbleTea Model interface
+// Init required as part of BubbleTea Model interface
 func (m AlertModel) Init() tea.Cmd {
-	return tickCmd()
+	return nil
 }
 
-// Update takes in a message and returns an associated command to drive model functionality
-// Implemented as part of BubbleTea Model interface
+// Update takes in a message and returns an associated command to drive model
+// functionality. First alertMsg starts the ticking command that causes alert
+// refreshing Implemented as part of BubbleTea Model interface
 func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		if m.activeAlert != nil && msg.String() == "esc" && m.allowEscToClose {
-			m.activeAlert = nil
-		}
-		return m, nil
 
-	case tickMsg: // Check to see if it's time to clear the alert
-		if m.activeAlert != nil {
-			if m.activeAlert.deathTime.Before(time.Time(msg)) {
-				m.activeAlert = nil
-			} else {
-				m.activeAlert.curLerpStep += DefaultLerpIncrement
-				if m.activeAlert.curLerpStep > 1 {
-					m.activeAlert.curLerpStep = 1
-				}
-			}
-		}
-
-		return m, tickCmd()
 	case alertMsg:
 		m.activeAlert = m.newNotify(msg.alertKey, msg.msg, msg.dur)
+		return m, tickCmd() // Start ticking when new alert appears
+
+	case tickMsg: // Check to see if it's time to clear the alert
+		if m.activeAlert == nil {
+			// No alert, don't tick
+			break
+		}
+		if m.activeAlert.deathTime.Before(time.Time(msg)) {
+			// Alert expired, stop ticking
+			m.activeAlert = nil
+			break
+		}
+		// Keep ticking while alert is active
+		m.activeAlert.curLerpStep += DefaultLerpIncrement
+		if m.activeAlert.curLerpStep > 1 {
+			m.activeAlert.curLerpStep = 1
+		}
+		return m, tickCmd()
+
+	case tea.KeyMsg:
+		if m.activeAlert == nil {
+			break
+		}
+		if msg.String() != "esc" {
+			break
+		}
+		if !m.allowEscToClose {
+			break
+		}
+		m.activeAlert = nil
+
 	}
 
 	return m, nil
@@ -256,7 +269,7 @@ func (m AlertModel) overlayCenter(contentLine, notifLine string, notifWidth, con
 
 // Timer stuff
 
-// tickMsg is the message that tells the model to assess active alert lifespan.
+// TickMsg is the message that tells the model to assess active alert lifespan.
 type tickMsg time.Time
 
 // tickCmd returns a tea Command to initiate a tick.
