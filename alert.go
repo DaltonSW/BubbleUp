@@ -97,7 +97,7 @@ type alertMsg struct {
 	// style: Mimic nvim.notify's style options perhaps?
 }
 
-func (m AlertModel) newNotify(key, msg string, dur time.Duration) *alert {
+func (m AlertModel) newAlert(key, msg string, dur time.Duration) *alert {
 	if msg == "" || key == "" {
 		return nil
 	}
@@ -238,10 +238,10 @@ func (m AlertModel) RegisterNewAlertType(definition AlertDefinition) {
 }
 
 var unicodePrefixes = map[string]string{
-	"Info":  InfoUnicodePrefix,
-	"Warn":  WarningUnicodePrefix,
-	"Error": ErrorUnicodePrefix,
-	"Debug": DebugUnicodePrefix,
+	InfoKey:  InfoUnicodePrefix,
+	WarnKey:  WarningUnicodePrefix,
+	ErrorKey: ErrorUnicodePrefix,
+	DebugKey: DebugUnicodePrefix,
 }
 
 // Registers all the alert types that ship with BubbleUp by out of the box.
@@ -266,7 +266,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 	}
 
 	infoDef := AlertDefinition{
-		Key:       "Info",
+		Key:       InfoKey,
 		Prefix:    infoPref,
 		ForeColor: InfoColor,
 	}
@@ -274,7 +274,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 	m.RegisterNewAlertType(infoDef)
 
 	warnDef := AlertDefinition{
-		Key:       "Warn",
+		Key:       WarnKey,
 		Prefix:    warnPref,
 		ForeColor: WarnColor,
 	}
@@ -282,7 +282,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 	m.RegisterNewAlertType(warnDef)
 
 	errorDef := AlertDefinition{
-		Key:       "Error",
+		Key:       ErrorKey,
 		Prefix:    errPref,
 		ForeColor: ErrorColor,
 	}
@@ -290,7 +290,7 @@ func (m AlertModel) registerDefaultAlertTypes() {
 	m.RegisterNewAlertType(errorDef)
 
 	debugDef := AlertDefinition{
-		Key:       "Debug",
+		Key:       DebugKey,
 		Prefix:    debugPref,
 		ForeColor: DebugColor,
 	}

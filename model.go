@@ -94,7 +94,7 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 
 	case alertMsg:
-		m.activeAlert = m.newNotify(msg.alertKey, msg.msg, msg.dur)
+		m.activeAlert = m.newAlert(msg.alertKey, msg.msg, msg.dur)
 		return m, tickCmd() // Start ticking when new alert appears
 
 	case tickMsg: // Check to see if it's time to clear the alert
