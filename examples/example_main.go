@@ -53,9 +53,9 @@ func main() {
 		// BEGIN here to understand how to create and use Bubble Up
 
 		// Create a new alert model and embed it within your program's model
-		//  width = 50 (max), minWidth = 10, duration = 10
+		//  width = 50 (max), minWidth = 10, duration = 10 seconds
 		// useNerdFont = default is false, but example app user can change.
-		m.alert = bubbleup.NewAlertModel(50, useNerdFont, 10).
+		m.alert = bubbleup.NewAlertModel(50, useNerdFont, 10*time.Second).
 			WithMinWidth(15).     // Dynamic width: alerts will size 15-50 chars
 			WithAllowEscToClose() // Allow <esc> to close an alert before timeout
 		// based on message length

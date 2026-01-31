@@ -48,7 +48,7 @@ From there, it's as simple as creating a new `bubbleup.AlertModel` by calling `b
 **Basic Example**:
 ```go
 // Create alert model: max width=50, use NerdFont, 10 second duration
-alertModel := bubbleup.NewAlertModel(50, true, 10)
+alertModel := bubbleup.NewAlertModel(50, true, 10*time.Second)
 
 m := myModel{
     alert: alertModel,
@@ -62,7 +62,7 @@ See the **Configuration Options** section below for advanced features like posit
 BubbleUp supports method chaining for configuration. All `With*()` methods return the modified `AlertModel`, allowing you to chain multiple configurations:
 
 ```go
-m.alert = bubbleup.NewAlertModel(50, false, 10).
+m.alert = bubbleup.NewAlertModel(50, false, 10*time.Second).
     WithMinWidth(15).                              // Enable dynamic width (15-50 chars)
     WithPosition(bubbleup.TopRightPosition).       // Position at top-right
     WithUnicodePrefix().                           // Use Unicode symbols
@@ -112,7 +112,7 @@ By default, alerts have a fixed width set by the `width` parameter passed to `Ne
 **Example**:
 ```go
 // Create with max width 50, enable dynamic sizing with min 15
-m.alert = bubbleup.NewAlertModel(50, true, 10).WithMinWidth(15)
+m.alert = bubbleup.NewAlertModel(50, true, 10*time.Second).WithMinWidth(15)
 
 // Short message: alert will be ~15-20 chars wide
 alertCmd = m.alert.NewAlertCmd(bubbleup.InfoKey, "Done")
@@ -158,13 +158,13 @@ BubbleUp supports three font/symbol options for alert prefixes:
 **Example**:
 ```go
 // Unicode fonts (recommended for portability)
-m.alert = bubbleup.NewAlertModel(50, false, 10).WithUnicodePrefix()
+m.alert = bubbleup.NewAlertModel(50, false, 10*time.Second).WithUnicodePrefix()
 
 // NerdFont (requires NerdFont installation on user's system)
-m.alert = bubbleup.NewAlertModel(50, true, 10)
+m.alert = bubbleup.NewAlertModel(50, true, 10*time.Second)
 
 // ASCII (maximum compatibility)
-m.alert = bubbleup.NewAlertModel(50, false, 10)
+m.alert = bubbleup.NewAlertModel(50, false, 10*time.Second)
 ```
 
 ### Keyboard Interaction
@@ -172,7 +172,7 @@ m.alert = bubbleup.NewAlertModel(50, false, 10)
 Enable `Esc` key to dismiss alerts before their timeout:
 
 ```go
-m.alert = bubbleup.NewAlertModel(50, true, 10).WithAllowEscToClose()
+m.alert = bubbleup.NewAlertModel(50, true, 10*time.Second).WithAllowEscToClose()
 ```
 
 **Handling `Esc` key in Your `Update()` Method**:
