@@ -106,7 +106,11 @@ font_installed_macos() {
 font_installed_linux() {
   # Prefer fc-list if available (fontconfig). Most distros have it installed.
   if have_cmd fc-list; then
-    fc-list : family 2>/dev/null | grep -Fq "$FONT_FAMILY_REQUIRED"
+    # Capture fc-list output first to avoid SIGPIPE (exit 141) under pipefail
+    # when grep -q exits early after finding a match.
+    local families
+    families="$(fc-list : family 2>/dev/null)"
+    echo "$families" | grep -Fq "$FONT_FAMILY_REQUIRED"
     return $?
   fi
 
