@@ -288,7 +288,7 @@ Full API documentation is available at [pkg.go.dev/go.dalton.dog/bubbleup](https
 
 ## Credits
 
-- Conceived of and created by [Dalton Williams](https://github.com/joel-sgc).
+- Conceived of and created by [Dalton Williams](https://github.com/daltonsw).
 - Built on top of [Charm's BubbleTea](https://github.com/charmbracelet/bubbletea) framework.
 - Contributions:
   - [Mike Schinkel](https://github.com/mikeschinkel):
