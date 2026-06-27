@@ -6,9 +6,10 @@ import (
 	"log"
 	"os"
 	"strings"
+	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
+	tea "charm.land/bubbletea/v2"
+	"charm.land/lipgloss/v2"
 	"go.dalton.dog/bubbleup"
 	"golang.org/x/term"
 )
@@ -19,9 +20,9 @@ type testModel struct {
 	content    string              // Our instruction content to display
 	fontChoice string              // Current icon font: Unicode, NerdFont, or ASCII
 	alert      bubbleup.AlertModel // Model that implements our BubbleUp alert
-	ExitKey    tea.KeyMsg          // Track program exit keys so we can switch fonts
+	ExitKey    tea.KeyPressMsg     // Track program exit keys so we can switch fonts
 	KeyPressed bool
-	PressedKey tea.KeyMsg
+	PressedKey tea.KeyPressMsg
 }
 
 // main is an example app that let's you see to use Bubble up.
@@ -83,7 +84,7 @@ func main() {
 		// it for you to see the different icon fonts used by Bubble Up.
 		// You do NOT need to understand the following to learn how to use
 		// BubbleUp.
-		p := tea.NewProgram(m, tea.WithAltScreen())
+		p := tea.NewProgram(m)
 		result, err := p.Run()
 		switch {
 		case err != nil:
@@ -133,7 +134,7 @@ func (m testModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// that include Unicode, NerdFont and ASCII.
 	var alertCmd tea.Cmd
 	switch msg := msg.(type) {
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		m.PressedKey = msg
 		m.KeyPressed = true
 		switch msg.String() {
@@ -177,7 +178,7 @@ func (m testModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 // View is the required BubbleTea method used to render output to the screen
-func (m testModel) View() string {
+func (m testModel) View() tea.View {
 	// Do any View stuff you need to like normal, and
 	// call your alert's Render function to render any active
 	// alerts over your content. Note: The alert model's View()
@@ -192,7 +193,13 @@ func (m testModel) View() string {
 			quit+strings.Repeat(" ", 10)+"["+legendStyle.Render(legend)+"]"+strings.Repeat(" ", 30-len(legend)-2),
 		)
 	}
-	return content
+
+	// In v2, program options like the alt screen are declared on the View
+	// rather than passed to tea.NewProgram(). Setting it here every frame is
+	// the idiomatic v2 replacement for tea.WithAltScreen().
+	view := tea.NewView(content)
+	view.AltScreen = true
+	return view
 }
 
 // getFontMenuChoices sets up icon font switcher menu.
