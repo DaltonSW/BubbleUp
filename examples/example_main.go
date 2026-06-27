@@ -1,11 +1,14 @@
 package main
 
-// Only two imports that are required
+// Only two imports that are required:
+//	- github.com/charmbracelet/bubbletea
+//	- go.dalton.dog/bubbleup
 import (
 	"fmt"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
