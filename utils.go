@@ -7,7 +7,6 @@ import (
 	"charm.land/lipgloss/v2"
 	"github.com/mattn/go-runewidth"
 	"github.com/muesli/reflow/ansi"
-	"github.com/muesli/reflow/wordwrap"
 )
 
 // Obtained from https://github.com/charmbracelet/lipgloss/blob/master/get.go
@@ -106,26 +105,25 @@ func cutRight(s string, keepWidth int) string {
 	return b.String()
 }
 
-// hangingWrap wraps text with a prefix to provide hanging indents
+// hangingWrap lays out "<prefix> <message>" within textWidth cells, wrapping the
+// message with a hanging indent so continuation lines align under the message
+// rather than under the prefix.
+//
+// The prefix occupies a fixed-width column and the message is rendered as a
+// second column wrapped to the remaining width; joining them horizontally yields
+// the indent for free, since lipgloss pads the blank rows beneath the prefix.
+// Letting lipgloss own the wrapping also means long, unbreakable tokens are hard
+// wrapped to the column width instead of overflowing.
 func hangingWrap(prefix, msg string, textWidth int) string {
 	prefix = prefix + " "
 	indentW := lipgloss.Width(prefix)
 	avail := textWidth - indentW
 	if avail < 1 {
-		// Degenerate case: not enough room for message; just show prefix and message raw.
+		// Degenerate case: no room for the message beside the prefix. Hand the
+		// whole thing back and let the caller's box wrap it.
 		return prefix + msg
 	}
 
-	// Wrap message to the available width.
-	// wordwrap.WrapString wraps on spaces; it will still break long tokens if needed.
-	wrapped := wordwrap.String(msg, avail)
-
-	// Add hanging indent to subsequent lines.
-	indent := strings.Repeat(" ", indentW)
-	lines := strings.Split(wrapped, "\n")
-	for i := 1; i < len(lines); i++ {
-		lines[i] = indent + lines[i]
-	}
-
-	return prefix + strings.Join(lines, "\n")
+	message := lipgloss.NewStyle().Width(avail).Render(msg)
+	return lipgloss.JoinHorizontal(lipgloss.Top, prefix, message)
 }

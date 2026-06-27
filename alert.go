@@ -151,18 +151,25 @@ func (n *alert) render() string {
 	newColor := backColor.BlendLab(n.foreColor, n.curLerpStep)
 	lipColor := lipgloss.Color(newColor.Hex())
 
+	newStyle := baseStyle.
+		Foreground(lipColor).
+		BorderForeground(lipColor).
+		Padding(0, 1)
+
+	// frame is the number of horizontal cells consumed by the border and
+	// padding (e.g. 1-cell border + 1-cell padding on each side = 4). lipgloss
+	// treats Width as the total box width, so the text area is Width - frame.
+	frame := newStyle.GetHorizontalFrameSize()
+
 	// Calculate actual width based on minWidth setting
 	actualWidth := n.width // default to max/fixed width
 
 	if n.minWidth > 0 {
-		// Dynamic mode: measure message width
+		// Dynamic mode: size the box to the message. The visible message is
+		// "<prefix> <message>" (see hangingWrap), so the box needs that width
+		// plus the frame to fit it on a single line.
 		messageText := fmt.Sprintf("%v %v", n.prefix, n.message)
-
-		// Get the width of the message text itself
-		messageWidth := lipgloss.Width(messageText)
-
-		// Account for extra space needed, determined imperically
-		messageWidth += 3
+		messageWidth := lipgloss.Width(messageText) + frame
 
 		// Clamp between min and max
 		if messageWidth < n.minWidth {
@@ -174,14 +181,12 @@ func (n *alert) render() string {
 		}
 	}
 
-	newStyle := baseStyle.
-		Foreground(lipColor).
-		BorderForeground(lipColor).
-		Width(actualWidth).
-		Padding(0, 1)
+	newStyle = newStyle.Width(actualWidth)
 
-	// Compute width available for text inside border+padding.
-	textWidth := actualWidth - 2
+	// Width available for text inside the border and padding. This must match
+	// what lipgloss actually allots, otherwise it re-wraps overflow lines and
+	// the hanging indent added by hangingWrap is lost.
+	textWidth := actualWidth - frame
 	if textWidth < 1 {
 		textWidth = 1
 	}
