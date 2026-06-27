@@ -2,7 +2,7 @@
 
 Float your alerts to the top of your TUI like a bubble in a soda. Integrates with BubbleTea applications seamlessly to render your status updates in style.
 
-[![Go Version](https://img.shields.io/badge/Go-1.23.1+-00ADD8?style=flat&logo=go)](https://go.dev)
+[![Go Version](https://img.shields.io/badge/Go-1.25.0+-00ADD8?style=flat&logo=go)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Example showcasing BubbleUp](./examples/example_main.gif)
@@ -13,7 +13,7 @@ Float your alerts to the top of your TUI like a bubble in a soda. Integrates wit
 -->
 ## Requirements
 
-- Go 1.23.1 or higher
+- Go 1.25.0 or higher
 - [BubbleTea](https://github.com/charmbracelet/bubbletea) framework
 
 ## Getting Started
