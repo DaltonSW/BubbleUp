@@ -2,7 +2,7 @@
 
 Float your alerts to the top of your TUI like a bubble in a soda. Integrates with BubbleTea applications seamlessly to render your status updates in style.
 
-[![Go Version](https://img.shields.io/badge/Go-1.23.1+-00ADD8?style=flat&logo=go)](https://go.dev)
+[![Go Version](https://img.shields.io/badge/Go-1.25.0+-00ADD8?style=flat&logo=go)](https://go.dev)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ![Example showcasing BubbleUp](./examples/example_main.gif)
@@ -13,7 +13,7 @@ Float your alerts to the top of your TUI like a bubble in a soda. Integrates wit
 -->
 ## Requirements
 
-- Go 1.23.1 or higher
+- Go 1.25.0+
 - [BubbleTea](https://github.com/charmbracelet/bubbletea) framework
 
 ## Getting Started
@@ -288,17 +288,12 @@ Full API documentation is available at [pkg.go.dev/go.dalton.dog/bubbleup](https
 
 ## Credits
 
-- Conceived of and created by [Dalton Williams](https://github.com/joel-sgc).
+- Conceived of and created by [Dalton Williams](https://github.com/daltonsw).
 - Built on top of [Charm's BubbleTea](https://github.com/charmbracelet/bubbletea) framework.
 - Contributions:
   - [Mike Schinkel](https://github.com/mikeschinkel):
-    - Top/Bottom + Left/Center/Right alert positioning, 
-    - Unicode message prefix for alerts,
-    - Dynamic width alerts,
-    - Enabling `Esc` to close alerts,
-    - Enhanced [example app](examples/example_main.go),
-    - [Screen recording](examples/example_main.gif) of example app, and
-    - [vhs](https://github.com/charmbracelet/vhs) tape [record script](examples/record-example.sh) for example app.
+    - Alert positioning, dynamic widths, `Esc` to close, and unicode prefix support
+    - Enhanced [example app](examples/example_main.go) (Including updated recording and [vhs](https://github.com/charmbracelet/vhs) [script](examples/record-example.sh))
 
 ## Contributing
 
