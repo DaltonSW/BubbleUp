@@ -10,7 +10,7 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
-	"go.dalton.dog/bubbleup"
+	"go.dalton.dog/bubbleup/v2"
 	"golang.org/x/term"
 )
 

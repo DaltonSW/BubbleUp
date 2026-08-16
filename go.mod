@@ -1,4 +1,4 @@
-module go.dalton.dog/bubbleup
+module go.dalton.dog/bubbleup/v2
 
 go 1.25.0
 
