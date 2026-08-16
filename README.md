@@ -13,7 +13,7 @@ Float your alerts to the top of your TUI like a bubble in a soda. Integrates wit
 -->
 ## Requirements
 
-- Go 1.25.0 or higher
+- Go 1.25.0+
 - [BubbleTea](https://github.com/charmbracelet/bubbletea) framework
 
 ## Getting Started
@@ -21,15 +21,15 @@ Float your alerts to the top of your TUI like a bubble in a soda. Integrates wit
 Run the following to download the module:
 
 ```sh
-go get go.dalton.dog/bubbleup
+go get go.dalton.dog/bubbleup/v2
 ```
 
 Then import it into your project with the following:
 
 ```go
 import (
-    "go.dalton.dog/bubbleup"
-    tea "github.com/charmbracelet/bubbletea"
+    "go.dalton.dog/bubbleup/v2"
+    tea "charm.land/bubbletea/v2"
 )
 ```
 
@@ -284,7 +284,7 @@ See [example](examples/example_main.go) for a complete working example demonstra
 
 ## Documentation
 
-Full API documentation is available at [pkg.go.dev/go.dalton.dog/bubbleup](https://pkg.go.dev/go.dalton.dog/bubbleup)
+Full API documentation is available at [pkg.go.dev/go.dalton.dog/bubbleup/v2](https://pkg.go.dev/go.dalton.dog/bubbleup/v2)
 
 ## Credits
 
@@ -292,13 +292,8 @@ Full API documentation is available at [pkg.go.dev/go.dalton.dog/bubbleup](https
 - Built on top of [Charm's BubbleTea](https://github.com/charmbracelet/bubbletea) framework.
 - Contributions:
   - [Mike Schinkel](https://github.com/mikeschinkel):
-    - Top/Bottom + Left/Center/Right alert positioning, 
-    - Unicode message prefix for alerts,
-    - Dynamic width alerts,
-    - Enabling `Esc` to close alerts,
-    - Enhanced [example app](examples/example_main.go),
-    - [Screen recording](examples/example_main.gif) of example app, and
-    - [vhs](https://github.com/charmbracelet/vhs) tape [record script](examples/record-example.sh) for example app.
+    - Alert positioning, dynamic widths, `Esc` to close, and unicode prefix support
+    - Enhanced [example app](examples/example_main.go) (Including updated recording and [vhs](https://github.com/charmbracelet/vhs) [script](examples/record-example.sh))
 
 ## Contributing
 

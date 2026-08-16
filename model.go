@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
+	tea "charm.land/bubbletea/v2"
 	"github.com/muesli/reflow/ansi"
 )
 
@@ -114,7 +114,7 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tickCmd()
 
-	case tea.KeyMsg:
+	case tea.KeyPressMsg:
 		if m.activeAlert == nil {
 			break
 		}
@@ -144,8 +144,8 @@ func (m AlertModel) HasActiveAlert() bool {
 
 // View doesn't do anything, and it should never be called directly
 // Implemented as part of BubbleTea Model interface
-func (m AlertModel) View() string {
-	return ""
+func (m AlertModel) View() tea.View {
+	return tea.NewView("")
 }
 
 // Render takes in the main view content and overlays the model's active alert.
