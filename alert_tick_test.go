@@ -70,3 +70,53 @@ func TestExpiredTickStopsChain(t *testing.T) {
 		t.Fatal("an expired alert should not re-arm the tick chain")
 	}
 }
+
+// TestReplacingAlertDoesNotArmSecondChain: a new alert arriving while
+// one is active must reuse the in-flight chain, not start another.
+func TestReplacingAlertDoesNotArmSecondChain(t *testing.T) {
+	m, _ := spawnActiveAlert(t, *NewAlertModel(50, false, time.Minute))
+
+	out, cmd := m.Update(alertMsg{alertKey: WarnKey, msg: "second", dur: time.Minute})
+	if cmd != nil {
+		t.Fatal("replacing an active alert armed a second tick chain")
+	}
+	if !out.(AlertModel).HasActiveAlert() {
+		t.Fatal("replacement alert should be active")
+	}
+}
+
+// TestEscThenNewAlertReusesInFlightTick: after Esc, the dismissed
+// alert's tick is still in flight, so an alert arriving before it
+// lands must not arm a second chain.
+func TestEscThenNewAlertReusesInFlightTick(t *testing.T) {
+	m := *NewAlertModel(50, false, time.Minute)
+	m.allowEscToClose = true
+	m, _ = spawnActiveAlert(t, m)
+
+	out, _ := m.Update(tea.KeyPressMsg{Code: tea.KeyEscape})
+	m = out.(AlertModel)
+	if m.HasActiveAlert() {
+		t.Fatal("esc should have closed the alert")
+	}
+
+	out, cmd := m.Update(alertMsg{alertKey: InfoKey, msg: "again", dur: time.Minute})
+	if cmd != nil {
+		t.Fatal("new alert armed a second chain while the old tick was in flight")
+	}
+
+	// The in-flight tick lands and adopts the new alert.
+	if _, cmd = out.(AlertModel).Update(tickMsg(time.Now())); cmd == nil {
+		t.Fatal("in-flight tick should keep ticking for the new alert")
+	}
+}
+
+// TestChainRestartsAfterEnding: once a chain has ended, the next
+// alert must arm a fresh one.
+func TestChainRestartsAfterEnding(t *testing.T) {
+	m, _ := spawnActiveAlert(t, *NewAlertModel(50, false, time.Minute))
+
+	out, _ := m.Update(tickMsg(time.Now().Add(2 * time.Minute)))
+	if _, cmd := out.(AlertModel).Update(alertMsg{alertKey: InfoKey, msg: "next", dur: time.Minute}); cmd == nil {
+		t.Fatal("alert after chain ended should arm a new tick chain")
+	}
+}

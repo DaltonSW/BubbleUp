@@ -20,6 +20,7 @@ type AlertModel struct {
 	allowEscToClose  bool
 	alertTypes       map[string]AlertDefinition
 	activeAlert      *alert
+	ticking          bool
 	width            int
 	minWidth         int
 	duration         time.Duration
@@ -95,16 +96,22 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case alertMsg:
 		m.activeAlert = m.newAlert(msg.alertKey, msg.msg, msg.dur)
-		return m, tickCmd() // Start ticking when new alert appears
+		if m.ticking {
+			return m, nil
+		}
+		m.ticking = true
+		return m, tickCmd()
 
 	case tickMsg: // Check to see if it's time to clear the alert
 		if m.activeAlert == nil {
-			// No alert, don't tick
+			// No alert, let the chain end
+			m.ticking = false
 			break
 		}
 		if m.activeAlert.deathTime.Before(time.Time(msg)) {
 			// Alert expired, stop ticking
 			m.activeAlert = nil
+			m.ticking = false
 			break
 		}
 		// Keep ticking while alert is active
