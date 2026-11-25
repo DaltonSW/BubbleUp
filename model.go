@@ -125,12 +125,6 @@ func (m AlertModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			break
 		}
 		m.activeAlert = nil
-
-	default:
-		// For any other message type, keep ticking if alert is active
-		if m.activeAlert != nil {
-			return m, tickCmd()
-		}
 	}
 
 	return m, nil
